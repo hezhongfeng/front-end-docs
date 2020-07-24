@@ -469,3 +469,98 @@ MyPromise.prototype.catch = function (onRejected) {
   return this.then(null, onRejected);
 };
 ```
+
+## Promise 的 API
+
+```js
+Promise.resolve()
+Promise.reject()
+Promise.prototype.finally()
+Promise.all()
+Promise.race(）
+```
+
+### finally
+
+无论是 resolve 或者 reject 都会走这个方法
+
+```js
+MyPromise.prototype.finally = function (fn) {
+  return this.then(
+    value => {
+      fn();
+      return value;
+    },
+    reason => {
+      fn();
+      throw reason;
+    }
+  );
+};
+```
+
+### Promise.all
+
+果数组，数组中结果的顺序和传入的 Promise 顺序一一对应。如果有一个 Promise 为 rejected 状态，则整个 Promise.all 为 rejected。
+
+```js
+MyPromise.all = function (promiseArr) {
+  return new MyPromise((resolve, reject) => {
+    let result = [];
+
+    promiseArr.forEach((promise, index) => {
+      promise.then(value => {
+        result[index] = value;
+
+        if (result.length === promiseArr.length) {
+          resolve(result);
+        }
+      }, reject);
+    });
+  });
+};
+```
+
+### Promise.race
+
+Promise.race()接收一个包含多个 Promise 的数组，当有一个 Promise 为 fulfilled 状态时，整个大的 Promise 为 onfulfilled，并执行 onFulfilled 回调函数。如果有一个 Promise 为 rejected 状态，则整个 Promise.race 为 rejected。
+
+```js
+MyPromise.race = function (promiseArr) {
+  return new MyPromise((resolve, reject) => {
+    promiseArr.forEach(promise => {
+      promise.then(value => {
+        resolve(value);
+      }, reject);
+    });
+  });
+};
+```
+
+### Promise.resolve
+
+Promise.resolve 用来生成一个 fulfilled 完成态的 Promise，一般放在整个 Promise 链的开头，用来开始一个 Promise 链。
+
+```js
+MyPromise.resolve = function (value) {
+  let promise;
+
+  promise = new MyPromise((resolve, reject) => {
+    this.prototype.resolvePromise(promise, value, resolve, reject);
+  });
+
+  return promise;
+};
+```
+
+### Promise.reject
+
+Promise.reject 用来生成一个 rejected 失败态的 Promise。
+
+```js
+MyPromise.reject = function (reason) {
+  return new MyPromise((resolve, reject) => {
+    reject(reason);
+  });
+};
+```
